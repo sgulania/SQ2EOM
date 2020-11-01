@@ -86,7 +86,7 @@ def L0(expr):
   L0 = 0
   return L0
  elif expr == "EE":
-  L0 = Fraction(1, 1)*AntiSymmetricTensor('L0',(),())
+  L0 = 0
   return L0
  elif expr == "CCSD":
   L0 = 1
