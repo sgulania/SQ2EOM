@@ -146,27 +146,28 @@ def LVECTORS(L0,L1,L2,flavor):
  ham = f*pr + Rational(1, 4)*v*pqsr
 
  cc  = BCH.level(ham,"SD")
- 
+ E_cc = evaluate_deltas(wicks(cc , keep_only_fully_contracted=True)) 
+
  i,j,k = symbols('i,j,k', below_fermi=True)
  a,b,c = symbols('a,b,c', above_fermi=True)
 
  if flavor == "IP": 
-  sig11 = evaluate_deltas(wicks((L1*cc)*F(i) , keep_only_fully_contracted=True))
+  sig11 = evaluate_deltas(wicks(L1*(cc-E_cc)*F(i) , keep_only_fully_contracted=True))
   index_rule = {'below':  'jklmno','above':  'abcdefg'}
   sig11 = substitute_dummies(sig11,new_indices=True, pretty_indices=index_rule)
  if flavor == "EA": 
-  sig11 = evaluate_deltas(wicks((L1*cc)*Fd(a) , keep_only_fully_contracted=True))
+  sig11 = evaluate_deltas(wicks(L1*(cc-E_cc)*Fd(a) , keep_only_fully_contracted=True))
   index_rule = {'below':  'ijklmno','above':  'bcdefg'}
   sig11 = substitute_dummies(sig11,new_indices=True, pretty_indices=index_rule)
  if flavor == "DIP": 
   PermutList = [PermutationOperator(i,j)]
-  sig11 = evaluate_deltas(wicks(L1*cc*F(j)*F(i), ,keep_only_fully_contracted=True))
+  sig11 = evaluate_deltas(wicks(L1*(cc-E_cc)*F(j)*F(i) ,keep_only_fully_contracted=True))
   index_rule = {'below':  'klmno','above':  'abcdefg'}
   sig11 = substitute_dummies(sig11,new_indices=True, pretty_indices=index_rule)
   sig11 = simplify_index_permutations(sig11,PermutList)
  if flavor == "DEA": 
   PermutList = [PermutationOperator(a,b)]
-  sig11 = evaluate_deltas(wicks((L1*cc)*Fd(a)*Fd(b) , keep_only_fully_contracted=True))
+  sig11 = evaluate_deltas(wicks(L1*(cc-E_cc)*Fd(a)*Fd(b) , keep_only_fully_contracted=True))
   index_rule = {'below':  'ijklmno','above':  'cdefg'}
   sig11 = substitute_dummies(sig11,new_indices=True, pretty_indices=index_rule)
   sig11 = simplify_index_permutations(sig11,PermutList)
@@ -233,25 +234,25 @@ def LVECTORS(L0,L1,L2,flavor):
 
  if flavor == "IP": 
   PermutList = [PermutationOperator(i,j)]
-  sig22 = evaluate_deltas(wicks((L2*cc)*Fd(a)*F(j)*F(i) , keep_only_fully_contracted=True))
+  sig22 = evaluate_deltas(wicks(L2*(cc-E_cc)*Fd(a)*F(j)*F(i) , keep_only_fully_contracted=True))
   index_rule = {'below':  'klmno','above':  'bcdefgh'}
   sig22 = substitute_dummies(sig22,new_indices=True, pretty_indices=index_rule)
   sig22 = simplify_index_permutations(sig22,PermutList)
  if flavor == "EA": 
   PermutList = [PermutationOperator(a,b)]
-  sig22 = evaluate_deltas(wicks((L2*cc)*Fd(a)*Fd(b)*F(i) , keep_only_fully_contracted=True))
+  sig22 = evaluate_deltas(wicks(L2*(cc-E_cc)*Fd(a)*Fd(b)*F(i) , keep_only_fully_contracted=True))
   index_rule = {'below':  'jklmno','above':  'cdefgh'}
   sig22 = substitute_dummies(sig22,new_indices=True, pretty_indices=index_rule)
   sig22 = simplify_index_permutations(sig22,PermutList)
  if flavor == "DIP": 
   PermutList = [PermutationOperator(i,j),PermutationOperator(j,k),PermutationOperator(i,k)]
-  sig22 = evaluate_deltas(wicks(L2*cc*Fd(a)*F(k)*F(j)*F(i) ,keep_only_fully_contracted=True))
+  sig22 = evaluate_deltas(wicks(L2*(cc-E_cc)*Fd(a)*F(k)*F(j)*F(i) ,keep_only_fully_contracted=True))
   index_rule = {'below':  'lmno','above':  'bcdefgh'}
   sig22 = substitute_dummies(sig22,new_indices=True, pretty_indices=index_rule)
   sig22 = simplify_index_permutations(sig22,PermutList)
  if flavor == "DEA": 
   PermutList = [PermutationOperator(a,b),PermutationOperator(b,c),PermutationOperator(a,c)]
-  sig22 = evaluate_deltas(wicks((L2*cc)*Fd(a)*Fd(b)*Fd(c)*F(i) , keep_only_fully_contracted=True))
+  sig22 = evaluate_deltas(wicks(L2*(cc-E_cc)*Fd(a)*Fd(b)*Fd(c)*F(i) , keep_only_fully_contracted=True))
   index_rule = {'below':  'jklmno','above':  'defgh'}
   sig22 = substitute_dummies(sig22,new_indices=True, pretty_indices=index_rule)
   sig22 = simplify_index_permutations(sig22,PermutList)
