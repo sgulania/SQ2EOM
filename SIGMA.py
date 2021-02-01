@@ -222,7 +222,7 @@ def LVECTORS(L0,L1,L2,flavor):
  if flavor == "DEA": 
   PermutList = [PermutationOperator(a,b)]
   sig21 = evaluate_deltas(wicks((cc*L1-L1*cc)*Fd(a)*Fd(b)*Fd(c)*F(i) , keep_only_fully_contracted=True))
-  index_rule = {'below':  'jklmno','above':  'cdefgh'}
+  index_rule = {'below':  'jklmno','above':  'defgh'}
   sig21 = substitute_dummies(sig21,new_indices=True, pretty_indices=index_rule)
   sig21 = simplify_index_permutations(sig21,PermutList)
 

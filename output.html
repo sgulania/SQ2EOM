@@ -1,0 +1,1272 @@
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="From-Second-Quantization-to-Equation-of-Motion-Coupled-Cluster-using-SymPy">From Second Quantization to Equation-of-Motion Coupled-Cluster using SymPy<a class="anchor-link" href="#From-Second-Quantization-to-Equation-of-Motion-Coupled-Cluster-using-SymPy">&#182;</a></h1><h2 id="Table-of-contents">Table of contents<a class="anchor-link" href="#Table-of-contents">&#182;</a></h2><ol>
+<li><a href="#Introduction">Introduction</a></li>
+<li><a href="#Second-Quantization">Second Quantization</a></li>
+<li><a href="#Normal-product">Normal product</a></li>
+<li><a href="#Contraction">Contraction</a></li>
+<li><a href="#Wicks-theorem">Wicks theorem</a></li>
+<li><a href="#Particle-Hole-formalism">Particle-Hole formalism</a></li>
+<li><a href="#Baker-Campbell-Hauersdorf">Baker-Campbell-Hauersdorf</a></li>
+<li><a href="#Hartree-Fock">Hartree-Fock</a></li>
+<li><a href="#Coupled-Cluster">Coupled-Cluster</a></li>
+<li><a href="#Equation-of-motion-Coupled-Cluster">Equation-of-motion Coupled-Cluster</a></li>
+</ol>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Introduction">Introduction<a class="anchor-link" href="#Introduction">&#182;</a></h3><p>We will have hands on tutorial for the derivation of EOM-CCSD amplitudes, one and two particle density matrix. I have developed a symbolic library using <a href="https://www.sympy.org/en/index.html">SymPy</a> for deriving analytical expressions which can be easily extended to any operator.</p>
+<p>First, we will derive the fermionic algebra from first quantization and study their properties. 
+$\newcommand{\ket}[1]{\left|{#1}\right\rangle}
+\newcommand{\bra}[1]{\left\langle{#1}\right|}
+\newcommand{\braket}[2]{\left\langle{#1}\middle|{#2}\right\rangle}$</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Second-Quantization">Second Quantization<a class="anchor-link" href="#Second-Quantization">&#182;</a></h3><p>In this section we will derive the fermionic algebra in second quantization representation from first quantization. Once the fermionic algebra is established, we will derive the relation between the its elements</p>
+$$ \ket{k} = {a^{+}_{k}}\ket{vac} $$<p>The opertor $a^{+}_{k}$ has created an electron on the vaccum state. 
+$$\phi_{k}(1) \longleftrightarrow {a^{+}_{k}}\ket{vac} $$
+$\ket{vac}$ is an abstract vaccum state and $\braket{vac}{vac} = 1$
+If there are two electrons the wavefunction in first quantization is 
+$$ \Phi(1,2) = \frac{1}{\sqrt{2}} 
+\begin{vmatrix}
+\phi_{i}(1) &amp; \phi_{k}(1) \\
+\phi_{i}(2) &amp; \phi_{k}(2) 
+\end{vmatrix} $$</p>
+<p>The same in second quantization follows as (keeping normalization included) 
+$$\ket{ik} = {a^{+}_{i}a^{+}_{k}}\ket{vac} $$</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>As $ \Phi(1,2)$ is an antisymmetric function therefore the creation operator in second quantization should respect this antisymmetry.</p>
+$$\Phi(2,1) = - \Phi(1,2)  \longleftrightarrow {a^{+}_{k}a^{+}_{i}}\ket{vac} = - {a^{+}_{i}a^{+}_{k}}\ket{vac} $$<p>One can see that the antisymmetry requirement is fulfilled by having the anticommutation relation between creation operators.</p>
+$$a^{+}_{k}a^{+}_{i} + a^{+}_{i}a^{+}_{k} = \{a^{+}_{k} , a^{+}_{i} \} = 0 \tag{QED 1} $$
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now we will repeat the same excercice for anhilation operators. Consider first one-electron system by creating an electron on $i$th orbital using $a_{i}^{+} $. We can define the anhilator operator $a_{i}$, which act on the former state and returns back the system to $\ket{vac}$.</p>
+$$a_{i} a_{i}^{+} \ket{vac} = \ket{vac}$$<p></p>
+<p>When there is no electron in a orbital $i$, then it should result to zero. 
+$$a_{i} \ket{vac} = 0$$</p>
+<p>In order to establish the anticommutation of anhilation operators we will utilize anticommutation relation of creation operators.</p>
+$$ a_{i} a_{k} \ket{ki} = \ket{vac} \ \ \  \&amp; \ \ \  a_{k} a_{i} \ket{ik} = \ket{vac} = -a_{k} a_{i} \ket{ki}$$<p>Therefore, 
+$$ a_{i}a_{k} + a_{k}a_{i}  = \{a_{k}, a_{i}\} = 0 \tag{QED 2}$$</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now we already have two anticommutation relation and will try to derive the third, between creation and anhilation operators. Consider two orbitals $i \ \&amp; \ k$, where $i\neq k$</p>
+$$a_{i}a_{k}^{+}\ket{i} = a_{i}\ket{ki} = - a_{i}\ket{ik} = - \ket{k}$$<p>Reversing the action,</p>
+$$a_{k}^{+} a_{i}\ket{i} = \ket{k}$$<p>Comparing both</p>
+$$a_{k}^{+} a_{i} + a_{i}a_{k}^{+} = \{ a_{i}, a_{k}^{+} \} = 0 $$<p>But when $i = k$, then</p>
+$$a_{i}^{+} a_{i} + a_{i}a_{i}^{+} = \{ a_{i}, a_{i}^{+} \} = 1 $$<p>Therefore the final expression which captures both sitation is</p>
+$$a_{i}^{+} a_{k} + a_{k}a_{i}^{+} = \{ a_{i}^{+}, a_{k} \} = \delta_{ik} \tag{QED 3}$$<p></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Last, we need to establish the adjoint relation between anhilation and creation operator. Consider</p>
+$$\bra{vac}a_{i}a_{k}^{+}\ket{vac} = \delta_{ik}$$<p>From first quantization</p>
+$$\braket {\phi_{i}}{\phi_{k}} = \delta_{ik}$$<p>Using second quantization on right hand side where $\dagger$ indicates hermitian conjugate</p>
+$$\bra{vac}(a_{i}^{+})^{\dagger} a_{k}^{\dagger}\ket{vac} = \delta_{ik}$$<p>It is only true if</p>
+$$(a_{i}^{+})^{\dagger} = a_{i}  \tag{QED 4}$$<p>Hence, $a_{i}^{+} = a_{i}^{\dagger}$ which means creation operator for $i$th orbital is hermitian conjugate of
+anhilation operator for the same orbital. From now on for creation operator we will use  $\dagger$ as superscript instead of $+$</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Particle-number-operator">Particle number operator<a class="anchor-link" href="#Particle-number-operator">&#182;</a></h3><p>We succesfully showed the transformation of basis from first quantization to second quantization by creating fermionic algebra. Now we will do the same for operators. Lets look at number operator for $N$ fermions in $N$ orthogonal basis. The wavefuntion can be written as 
+$$\ket{\Psi_{N}} =  a^{\dagger}_{N}a^{\dagger}_{N-1} ... a^{\dagger}_{2} a^{\dagger}_{1}\ket{vac}$$
+Define number operator for $k$th orbital 
+$$a^{\dagger}_{k}a_{k}  $$
+Act this opeartor on $\ket{\Psi_{N}}$
+$$a^{\dagger}_{k}a_{k} \ket{\Psi_{N}} = a^{\dagger}_{k}a_{k} (a^{\dagger}_{N}a^{\dagger}_{N-1} ... a^{\dagger}_{k} ...  a^{\dagger}_{2} a^{\dagger}_{1}\ket{vac})$$</p>
+<p>Using eq.(1) and eq.(3), both $a^{\dagger}_{k}a_{k}$ can move next to $a^{\dagger}_{k}$ inside $\Psi_{N}$</p>
+$$a^{\dagger}_{k}a_{k} \ket{\Psi_{N}} = a^{\dagger}_{N}a^{\dagger}_{N-1} ...a^{\dagger}_{k}a_{k}a^{\dagger}_{k} ...  a^{\dagger}_{2} a^{\dagger}_{1}\ket{vac}  = a^{\dagger}_{N}a^{\dagger}_{N-1} ...a^{\dagger}_{k}...  a^{\dagger}_{2} a^{\dagger}_{1}\ket{vac} = +1\ket{\Psi_{N}}$$<h4 id="Particle-number-operator-for-$N$-particles">Particle number operator for $N$ particles<a class="anchor-link" href="#Particle-number-operator-for-$N$-particles">&#182;</a></h4>$$\sum_{i=1}^{N} a^{\dagger}_{i}a_{i} \ket{\Psi_{N}} = N \ket{\Psi_{N}} $$
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Parity-of-permutation">Parity of permutation<a class="anchor-link" href="#Parity-of-permutation">&#182;</a></h3>$$p q r s \xrightarrow[]{(12)(34)} q p s r$$<p></p>
+<p>The total number of transposition required to decompose any permutation $P$ is known as its parity, $\mathcal{p}$</p>
+<p>If the total number is even then its called even parity</p>
+<p>If the total number is odd then its called odd parity</p>
+<p>Sign of permutation $P$ is defined as</p>
+$$sgn(P) =  -1^{p}$$<p>Hence,</p>
+$$sgn(P_{odd}) =  -1 \hspace{2cm} sgn(P_{even}) =  1$$
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Normal-product">Normal product<a class="anchor-link" href="#Normal-product">&#182;</a></h3><p>Given the product of operators, the normal product is defined as rearrangment of operators such that all the creation operator are moved to left and all the anhilation operator to right, then multiply it by sign of permutation.</p>
+<p>Example: Consiper $Q = a_{p}^{\dagger}a_{q}a_{r}^{\dagger}$</p>
+<p>Now, the in order to write normal product of $Q$, one has to permute $a_{q}a_{r}^{\dagger}$ and multiply thw whole by -1 ( $\because$ odd parity permutation).</p>
+$$n[a_{p}^{\dagger}a_{q}a_{r}^{\dagger}] = -a_{p}^{\dagger}a_{r}^{\dagger}a_{q} $$<p>Excercise: $Q =  a_{s}a_{p}^{\dagger}a_{r}a_{q}^{\dagger}$</p>
+<p>1) $n[Q]$</p>
+<p>2) $n[n[Q]]$ (nomal product is idempotent operator)</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Solution: $Q =  a_{s}a_{p}^{\dagger}a_{r}a_{q}^{\dagger}$</p>
+<p>1) $n[Q] = - a_{q}^{\dagger}a_{p}^{\dagger}a_{r}a_{s} = a_{p}^{\dagger}a_{q}^{\dagger}a_{r}a_{s} $</p>
+<p>2) $n[n[Q]] = n[Q]$</p>
+<p>Now, we will compute normal product using SymPy</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sympy.physics.secondquant</span> <span class="k">import</span> <span class="n">AnnihilateFermion</span><span class="p">,</span> <span class="n">CreateFermion</span><span class="p">,</span> <span class="n">NO</span>
+<span class="kn">from</span> <span class="nn">sympy</span> <span class="k">import</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">Eq</span>
+
+<span class="n">p</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">s</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;p,q,r,s&#39;</span><span class="p">)</span>
+
+<span class="n">Q</span> <span class="o">=</span> <span class="n">AnnihilateFermion</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">*</span><span class="n">CreateFermion</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">*</span><span class="n">AnnihilateFermion</span><span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="o">*</span><span class="n">CreateFermion</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">Q</span><span class="p">)</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">NO</span><span class="p">(</span><span class="n">Q</span><span class="p">)</span>
+<span class="n">nn</span> <span class="o">=</span> <span class="n">NO</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">nn</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle a_{s} a^\dagger_{p} a_{r} a^\dagger_{q}$
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle \left\{a^\dagger_{p} a^\dagger_{q} a_{r} a_{s}\right\}$
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle \left\{a^\dagger_{p} a^\dagger_{q} a_{r} a_{s}\right\}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Contraction">Contraction<a class="anchor-link" href="#Contraction">&#182;</a></h3><p>Contraction between two operators is defined as itself minus its normal product. Symbolically</p>
+<p>&lt;img src="figures/con1.jpg" width=30% height: auto&gt;</p>
+<p>Example: Compute contraction of $Q = a_{p}a_{q}$</p>
+<p>&lt;img src="figures/ex_con1.jpg"  width=30% height: auto&gt;</p>
+<p>Excercise: Compute contraction of the following</p>
+<p>1) $a_{p}a_{q}^{\dagger}$</p>
+<p>2) $a_{p}^{\dagger}a_{q}$</p>
+<p>3) $a_{p}^{\dagger}a_{q}^{\dagger}$</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Solution:</p>
+<p>&lt;img src="figures/sol_con1.jpg" width=100% height: auto&gt;</p>
+<p>Now, we will compute normal product using SymPy</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">secondquant_gen</span> <span class="k">import</span> <span class="n">contraction</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">Fd</span> <span class="c1"># F = AnnihilateFermion, Fd = CreateFermion</span>
+<span class="kn">from</span> <span class="nn">sympy</span> <span class="k">import</span> <span class="n">symbols</span>
+
+
+<span class="n">p</span><span class="p">,</span><span class="n">q</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;p q&#39;</span><span class="p">)</span>
+
+<span class="n">C1</span> <span class="o">=</span> <span class="n">contraction</span><span class="p">(</span><span class="n">F</span><span class="p">(</span><span class="n">p</span><span class="p">),</span><span class="n">F</span><span class="p">(</span><span class="n">q</span><span class="p">))</span>
+<span class="n">C2</span> <span class="o">=</span> <span class="n">contraction</span><span class="p">(</span><span class="n">F</span><span class="p">(</span><span class="n">p</span><span class="p">),</span><span class="n">Fd</span><span class="p">(</span><span class="n">q</span><span class="p">))</span>
+<span class="n">C3</span> <span class="o">=</span> <span class="n">contraction</span><span class="p">(</span><span class="n">Fd</span><span class="p">(</span><span class="n">p</span><span class="p">),</span><span class="n">F</span><span class="p">(</span><span class="n">q</span><span class="p">))</span>
+<span class="n">C4</span> <span class="o">=</span> <span class="n">contraction</span><span class="p">(</span><span class="n">Fd</span><span class="p">(</span><span class="n">p</span><span class="p">),</span><span class="n">Fd</span><span class="p">(</span><span class="n">q</span><span class="p">))</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">C1</span><span class="p">,</span><span class="n">C2</span><span class="p">,</span><span class="n">C3</span><span class="p">,</span><span class="n">C4</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_text output_subarea ">
+<pre>0</pre>
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle \delta_{p q}$
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_text output_subarea ">
+<pre>0</pre>
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_text output_subarea ">
+<pre>0</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Normal-products-with-Contractions">Normal products with Contractions<a class="anchor-link" href="#Normal-products-with-Contractions">&#182;</a></h3><p>Given normal product of operators with contraction of operators inside the normal product.</p>
+<p>Then take all the contractions out in pairs and same order, leave uncontracted operators inside normal product and multiply sign of permutation.</p>
+<p>Example: 
+&lt;img src="figures/NPC_ex1.jpg" width=100% height: auto&gt;</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Example: 
+&lt;img src="figures/NPC_ex2.jpg" width=100% height: auto&gt;</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Wicks-Theorem">Wicks Theorem<a class="anchor-link" href="#Wicks-Theorem">&#182;</a></h3><p>Given a product of operators then it can be rewritten as normal product of the same plus normal product with all possible contractions inside.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Example:</p>
+<p>&lt;img src="figures/wick1.jpg" width=100% height: auto&gt;</p>
+<p>Now, we will show use of wicks theorem using SymPy</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">secondquant_gen</span> <span class="k">import</span> <span class="n">wicks</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">Fd</span>
+<span class="kn">from</span> <span class="nn">sympy</span> <span class="k">import</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">Dummy</span>
+
+
+<span class="n">p</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">u</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;p q r s t u&#39;</span><span class="p">)</span>
+
+<span class="n">E1</span> <span class="o">=</span> <span class="n">wicks</span><span class="p">(</span><span class="n">F</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">*</span><span class="n">Fd</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="o">*</span><span class="n">Fd</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">E1</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle \delta_{p q} a^\dagger_{r} - \delta_{p r} a^\dagger_{q} + \left\{a^\dagger_{q} a^\dagger_{r} a_{p}\right\}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">E2</span> <span class="o">=</span> <span class="n">wicks</span><span class="p">(</span><span class="n">F</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">*</span><span class="n">F</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="o">*</span><span class="n">Fd</span><span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="o">*</span><span class="n">F</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">*</span><span class="n">Fd</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">*</span><span class="n">Fd</span><span class="p">(</span><span class="n">u</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">E2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle \delta_{p r} \delta_{q t} \delta_{s u} - \delta_{p r} \delta_{q t} \left\{a^\dagger_{u} a_{s}\right\} - \delta_{p r} \delta_{q u} \delta_{s t} + \delta_{p r} \delta_{q u} \left\{a^\dagger_{t} a_{s}\right\} + \delta_{p r} \delta_{s t} \left\{a^\dagger_{u} a_{q}\right\} - \delta_{p r} \delta_{s u} \left\{a^\dagger_{t} a_{q}\right\} - \delta_{p r} \left\{a^\dagger_{t} a^\dagger_{u} a_{q} a_{s}\right\} - \delta_{p t} \delta_{q r} \delta_{s u} + \delta_{p t} \delta_{q r} \left\{a^\dagger_{u} a_{s}\right\} - \delta_{p t} \delta_{q u} \left\{a^\dagger_{r} a_{s}\right\} + \delta_{p t} \delta_{s u} \left\{a^\dagger_{r} a_{q}\right\} + \delta_{p t} \left\{a^\dagger_{r} a^\dagger_{u} a_{q} a_{s}\right\} + \delta_{p u} \delta_{q r} \delta_{s t} - \delta_{p u} \delta_{q r} \left\{a^\dagger_{t} a_{s}\right\} + \delta_{p u} \delta_{q t} \left\{a^\dagger_{r} a_{s}\right\} - \delta_{p u} \delta_{s t} \left\{a^\dagger_{r} a_{q}\right\} - \delta_{p u} \left\{a^\dagger_{r} a^\dagger_{t} a_{q} a_{s}\right\} - \delta_{q r} \delta_{s t} \left\{a^\dagger_{u} a_{p}\right\} + \delta_{q r} \delta_{s u} \left\{a^\dagger_{t} a_{p}\right\} + \delta_{q r} \left\{a^\dagger_{t} a^\dagger_{u} a_{p} a_{s}\right\} - \delta_{q t} \delta_{s u} \left\{a^\dagger_{r} a_{p}\right\} - \delta_{q t} \left\{a^\dagger_{r} a^\dagger_{u} a_{p} a_{s}\right\} + \delta_{q u} \delta_{s t} \left\{a^\dagger_{r} a_{p}\right\} + \delta_{q u} \left\{a^\dagger_{r} a^\dagger_{t} a_{p} a_{s}\right\} + \delta_{s t} \left\{a^\dagger_{r} a^\dagger_{u} a_{p} a_{q}\right\} - \delta_{s u} \left\{a^\dagger_{r} a^\dagger_{t} a_{p} a_{q}\right\} + \left\{a^\dagger_{r} a^\dagger_{t} a^\dagger_{u} a_{p} a_{q} a_{s}\right\}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Expectation-value-with-$\ket{vac}$">Expectation value with $\ket{vac}$<a class="anchor-link" href="#Expectation-value-with-$\ket{vac}$">&#182;</a></h3><p>Let $Q = M_{1}M_{2}M_{3} ... M_{n-1}M_{n}$ product of $n$ operators</p>
+<p>&lt;img src="figures/prop_wick1.jpg" width=100% height: auto&gt;</p>
+<p>From this one can easily see the importance of Wick's theorem. Lets do some checks using SymPy</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Exercise:</p>
+<p>$Q = a_{p}a_{q}^{\dagger}a_{r}^{\dagger}$</p>
+<p>$Q = a_{p}a_{q}a_{r}^{\dagger}a_{s}a_{t}^{\dagger}a_{u}^{\dagger}$</p>
+<p>Compute $\bra{vac}Q\ket{vac}$?</p>
+<p>Solution:</p>
+<ol>
+<li>Conver $Q$ to normal order using wicks theorem.</li>
+<li>Only terms which are fully contracted will result in non-zero</li>
+</ol>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">secondquant_gen</span> <span class="k">import</span> <span class="n">wicks</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">Fd</span>
+<span class="kn">from</span> <span class="nn">sympy</span> <span class="k">import</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">Dummy</span>
+
+
+<span class="n">p</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">u</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;p q r s t u&#39;</span><span class="p">)</span>
+
+<span class="n">E1</span> <span class="o">=</span> <span class="n">wicks</span><span class="p">(</span><span class="n">F</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">*</span><span class="n">Fd</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="o">*</span><span class="n">Fd</span><span class="p">(</span><span class="n">r</span><span class="p">),</span><span class="n">keep_only_fully_contracted</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">E1</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle 0$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">E2</span> <span class="o">=</span> <span class="n">wicks</span><span class="p">(</span><span class="n">F</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">*</span><span class="n">F</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="o">*</span><span class="n">Fd</span><span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="o">*</span><span class="n">F</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">*</span><span class="n">Fd</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">*</span><span class="n">Fd</span><span class="p">(</span><span class="n">u</span><span class="p">),</span><span class="n">keep_only_fully_contracted</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">E2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle \delta_{p r} \delta_{q t} \delta_{s u} - \delta_{p r} \delta_{q u} \delta_{s t} - \delta_{p t} \delta_{q r} \delta_{s u} + \delta_{p u} \delta_{q r} \delta_{s t}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Particle-Hole-formalism">Particle Hole formalism<a class="anchor-link" href="#Particle-Hole-formalism">&#182;</a></h3><p>This procedure makes the evaluation of certain matrix elements easier like</p>
+$$\bra{\Phi_{0}}\hat{H}\ket{\Phi_{0}}$$$$\bra{\Phi_{i}^{a}}\hat{H}\ket{\Phi_{0}}$$$$\bra{\Phi_{ij}^{ab}}\hat{H}\ket{\Phi_{0}}$$<p>where, $\Phi_{0}$ is Hartree-Fock determinant. Given a Hartree-Fock solution we get occupied and virtual orbitals. Lets assign symbols $(i,j,k,...)$ to occupied and $(a,b,c,...)$ to virtual.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We will define new set of operators 
+$$ 
+b_{p} =
+\left\{
+    \begin{array}{ll}
+        a_{p}^{\dagger}  &amp; \mbox{if } p = i \\
+        a_{p}            &amp; \mbox{if } p = a
+    \end{array}
+\right.
+$$</p>
+$$ 
+b_{p}^\dagger =
+\left\{
+    \begin{array}{ll}
+        a_{p}            &amp; \mbox{if } p = i \\
+        a_{p}^{\dagger}  &amp; \mbox{if } p = a
+    \end{array}
+\right.
+$$<p>This makes the HF determinant a Fermi vaccum</p>
+$$ b_{p}\ket{\Phi_{0}} = 0$$<p>This follows 
+$$ \{ b_{p},b_{q} \} = 0 \hspace{1cm} \{ b_{p}^{\dagger},b_{q}^{\dagger} \} = 0 \hspace{1cm} \{ b_{p},b_{q}^\dagger \}  = \delta_{pq}  $$</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Normal-product-of-PHF">Normal product of PHF<a class="anchor-link" href="#Normal-product-of-PHF">&#182;</a></h3><p>It is defined similarly, as rearrangment of operators ($b_{p}$ \&amp; $b_{q}^{\dagger}$) such that all the creation operator are moved to left and all the anhilation operator to right, then multiply it by sign of permutation.</p>
+<p>Example: Consiper $R = b_{p}^{\dagger}b_{q}b_{r}^{\dagger}$</p>
+<p>Now, the in order to write normal product of $R$, one has to permute $b_{q}b_{r}^{\dagger}$ and multiply thw whole by -1 ( $\because$ odd parity permutation).</p>
+$$N[b_{p}^{\dagger}b_{q}b_{r}^{\dagger}] = -b_{p}^{\dagger}b_{r}^{\dagger}b_{q} $$<p>The thing one has to focus is this definition shows different result that $n[ ]$.
+Lets do an excercise to explain this.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We are going to compute normal order of $a_{p}^{\dagger}a_{q}a_{r}^{\dagger}$ for $p=i,q=j,r=a$
+$$N[a_{i}^{\dagger}a_{j}a_{a}^{\dagger}] = N[b_{i}b_{j}^{\dagger}b_{a}^{\dagger}] = 
+b_{j}^{\dagger}b_{a}^{\dagger}b_{i} = -b_{a}^{\dagger}b_{j}^{\dagger}b_{i}  =  -a_{a}^{\dagger}a_{j}a_{i}^{\dagger}  $$</p>
+<p>Also compute 
+$$n[a_{i}^{\dagger}a_{j}a_{a}^{\dagger}] = -a_{i}^{\dagger}a_{a}^{\dagger}a_{j} = a_{a}^{\dagger}a_{i}^{\dagger}a_{j} = a_{a}^{\dagger}\delta_{ij} -  a_{a}^{\dagger}a_{j}^{\dagger}a_{i} $$</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sympy.physics.secondquant</span> <span class="k">import</span> <span class="n">NO</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">Fd</span> <span class="c1"># F = AnnihilateFermion, Fd = CreateFermion</span>
+<span class="kn">from</span> <span class="nn">sympy</span> <span class="k">import</span> <span class="n">symbols</span>
+
+
+<span class="n">i</span><span class="p">,</span><span class="n">j</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;i j&#39;</span><span class="p">,</span> <span class="n">below_fermi</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">above_fermi</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">NO</span><span class="p">(</span><span class="n">Fd</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">*</span><span class="n">F</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="o">*</span><span class="n">Fd</span><span class="p">(</span><span class="n">a</span><span class="p">)))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle - \left\{a^\dagger_{a} a_{j} a^\dagger_{i}\right\}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Contractions-in-PHF">Contractions in PHF<a class="anchor-link" href="#Contractions-in-PHF">&#182;</a></h3><p>Same way they are defined but the operators are from PHF</p>
+<p>&lt;img src="figures/con_phf.jpg" width=30% height: auto&gt;</p>
+<p>Similarlry the contraction inside normal product, Wicks theorem are defined.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Expectation-value-with-$\ket{\Phi_{0}}$">Expectation value with $\ket{\Phi_{0}}$<a class="anchor-link" href="#Expectation-value-with-$\ket{\Phi_{0}}$">&#182;</a></h3><p>Let $R = M_{1}M_{2}M_{3} ... M_{n-1}M_{n}$ product of $n$ operators</p>
+<p>&lt;img src="figures/phf_prop_wick1.jpg" width=100% height: auto&gt;</p>
+<p>From this one can easily see the importance of Wick's theorem. Lets do some checks using SymPy and derive Hartree-Fock energy</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Electronic-Hamiltonian">Electronic Hamiltonian<a class="anchor-link" href="#Electronic-Hamiltonian">&#182;</a></h3>$$H_{el} = \sum_{pq} h_{pq} a_{p}^{\dagger} a_{q} + \frac{1}{4}\sum_{pqrs} v^{pq}_{rs} a_{p}^{\dagger}a_{q}^{\dagger}a_{s}a_{r}$$<p>where,</p>
+$$h_{pq} = \bra{\phi_{p} (x)}(-\frac{1}{2}\nabla^{2} -\sum_{\alpha} \frac{Z_{\alpha}}{r_{\alpha x}} )\ket{\phi_{q} (x)}$$$$v_{pqrs} = \bra{\phi_{p} \phi_{q}}\ket{\phi_{r} \phi_{s}} = \braket{\phi_{p} \phi_{q}}{\phi_{r}\phi_{s}} - \braket{\phi_{p} \phi_{q}}{\phi_{s}\phi_{r}}$$<p>Lets find Hartree-Fock energy</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sympy.physics.secondquant</span> <span class="k">import</span> <span class="n">wicks</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">Fd</span><span class="p">,</span> <span class="n">NO</span>  <span class="c1"># F = AnnihilateFermion, Fd = CreateFermion</span>
+<span class="kn">from</span> <span class="nn">sympy.physics.secondquant</span> <span class="k">import</span> <span class="n">substitute_dummies</span><span class="p">,</span> <span class="n">contraction</span>
+<span class="kn">from</span> <span class="nn">sympy.physics.secondquant</span> <span class="k">import</span> <span class="n">AntiSymmetricTensor</span><span class="p">,</span> <span class="n">evaluate_deltas</span>
+<span class="kn">from</span> <span class="nn">sympy</span> <span class="k">import</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">Rational</span><span class="p">,</span> <span class="n">Dummy</span>
+    
+<span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;p,q,r,s&#39;</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="n">Dummy</span><span class="p">)</span>                                      
+
+<span class="n">h</span> <span class="o">=</span> <span class="n">AntiSymmetricTensor</span><span class="p">(</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">p</span><span class="p">,),</span> <span class="p">(</span><span class="n">q</span><span class="p">,))</span>                                        
+<span class="n">pq</span> <span class="o">=</span> <span class="n">Fd</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">*</span><span class="n">F</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>                                                                 
+<span class="n">v</span> <span class="o">=</span> <span class="n">AntiSymmetricTensor</span><span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">),</span> <span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">s</span><span class="p">))</span>                                    
+<span class="n">pqsr</span> <span class="o">=</span> <span class="n">Fd</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">*</span><span class="n">Fd</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="o">*</span><span class="n">F</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">*</span><span class="n">F</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+<span class="n">H</span> <span class="o">=</span> <span class="n">h</span><span class="o">*</span><span class="n">pq</span> <span class="o">+</span> <span class="n">Rational</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">pqsr</span>                                                                                                                                              
+<span class="n">display</span><span class="p">(</span><span class="n">H</span><span class="p">)</span> <span class="c1"># Without summation                                                                    </span>
+                                                                                
+<span class="n">eq</span> <span class="o">=</span> <span class="n">wicks</span><span class="p">(</span><span class="n">H</span><span class="p">,</span><span class="n">keep_only_fully_contracted</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>                                   
+<span class="n">index_rule</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;below&#39;</span><span class="p">:</span>  <span class="s1">&#39;ijklmno&#39;</span><span class="p">,</span><span class="s1">&#39;above&#39;</span><span class="p">:</span>  <span class="s1">&#39;abcde&#39;</span><span class="p">,</span> <span class="s1">&#39;general&#39;</span><span class="p">:</span> <span class="s1">&#39;pqrs&#39;</span><span class="p">}</span>
+<span class="n">eq</span> <span class="o">=</span> <span class="n">substitute_dummies</span><span class="p">(</span><span class="n">eq</span><span class="p">,</span> <span class="n">new_indices</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">pretty_indices</span><span class="o">=</span><span class="n">index_rule</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">eq</span><span class="p">)</span>                                                                     
+
+<span class="n">eq</span> <span class="o">=</span> <span class="n">evaluate_deltas</span><span class="p">(</span><span class="n">eq</span><span class="p">)</span>                                                                
+<span class="n">display</span><span class="p">(</span><span class="n">eq</span><span class="p">)</span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle h^{p}_{q} a^\dagger_{p} a_{q} + \frac{v^{pq}_{rs} a^\dagger_{p} a^\dagger_{q} a_{s} a_{r}}{4}$
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle \delta_{i p} \delta_{p q} h^{q}_{p} + \frac{\delta_{i q} \delta_{j p} \delta_{p r} \delta_{q s} v^{rs}_{pq}}{2}$
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle h^{i}_{i} + \frac{v^{ij}_{ij}}{2}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Normal-ordered-Hamiltonian">Normal ordered Hamiltonian<a class="anchor-link" href="#Normal-ordered-Hamiltonian">&#182;</a></h3>$$H_{N} = \sum_{pq} h_{pq} N[a_{p}^{\dagger} a_{q}] + \frac{1}{4}\sum_{pqrs} v^{pq}_{rs} N[a_{p}^{\dagger}a_{q}^{\dagger}a_{s}a_{r}]$$<p>One can show that</p>
+$$H_{el} = H_{N} + E_{HF}$$<p>From now on we will use $H_{N}$ or computing matrix elements, also $H_{N}$ measures the correlation effect</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Baker-Campbell-Hauersdorf">Baker-Campbell-Hauersdorf<a class="anchor-link" href="#Baker-Campbell-Hauersdorf">&#182;</a></h3>$$e^{-B} A  e^{B} = A + [A,B] + \frac{1}{2!}[[A,B],B] + \frac{1}{3!}[[[A,B],B],B] +  ... $$<p>if $A$ is electronic Hamiltonian or normal ordered Hamiltonian and $B$ any excitation operator, then due to the stucture of Hamiltonian the series truncate after fourth expansion. This is the reason we call coupled cluster as coupled cluster.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Coupled-Cluster-Singles-and-Doubles-(CCSD)">Coupled Cluster Singles and Doubles (CCSD)<a class="anchor-link" href="#Coupled-Cluster-Singles-and-Doubles-(CCSD)">&#182;</a></h3>$$\Psi_{CCSD} = e^{T} \ket{\Phi_{0}}$$<p>where, 
+$$ T_{1} = \sum_{ia}t_{i}^{a}a^{\dagger}i$$</p>
+$$ T_{2} = \frac{1}{4}\sum_{ijab}t_{ij}^{ab}a^{\dagger}b^{\dagger}ji$$<p>Equations which need to be solved
+$$ E_{CCSD}^{cor} = \bra{\Phi_{0}}e^{-T} H_{N} e^{T} \ket{\Phi_{0}}   \tag{Correltion energy}$$</p>
+$$ 0 = \bra{\Phi_{i}^{a}}e^{-T} H_{N} e^{T} \ket{\Phi_{0}}   \tag{$T_{1}$ amplitude}$$<p></p>
+$$ 0 = \bra{\Phi_{ij}^{ab}}e^{-T} H_{N} e^{T} \ket{\Phi_{0}}   \tag{$T_{2}$ amplitude}$$<p></p>
+<p>Lets see the power of SymPy now,</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sympy.physics.secondquant</span> <span class="k">import</span> <span class="n">wicks</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">Fd</span><span class="p">,</span> <span class="n">NO</span>  <span class="c1"># F = AnnihilateFermion, Fd = CreateFermion</span>
+<span class="kn">from</span> <span class="nn">sympy.physics.secondquant</span> <span class="k">import</span> <span class="n">substitute_dummies</span><span class="p">,</span> <span class="n">contraction</span>
+<span class="kn">from</span> <span class="nn">sympy.physics.secondquant</span> <span class="k">import</span> <span class="n">AntiSymmetricTensor</span><span class="p">,</span> <span class="n">evaluate_deltas</span>
+<span class="kn">from</span> <span class="nn">sympy.physics.secondquant</span> <span class="k">import</span> <span class="n">PermutationOperator</span><span class="p">,</span> <span class="n">simplify_index_permutations</span>
+<span class="kn">from</span> <span class="nn">sympy</span> <span class="k">import</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">Rational</span><span class="p">,</span> <span class="n">Dummy</span>
+<span class="kn">import</span> <span class="nn">BCH</span>  
+    
+<span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;p,q,r,s&#39;</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="n">Dummy</span><span class="p">)</span> 
+
+<span class="n">i</span><span class="p">,</span><span class="n">j</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;i,j&#39;</span> <span class="p">,</span> <span class="n">below_fermi</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>                                     
+<span class="n">a</span><span class="p">,</span><span class="n">b</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;a,b&#39;</span> <span class="p">,</span> <span class="n">above_fermi</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">f</span> <span class="o">=</span> <span class="n">AntiSymmetricTensor</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">p</span><span class="p">,),</span> <span class="p">(</span><span class="n">q</span><span class="p">,))</span>                                        
+<span class="n">pq</span> <span class="o">=</span> <span class="n">NO</span><span class="p">(</span><span class="n">Fd</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">*</span><span class="n">F</span><span class="p">(</span><span class="n">q</span><span class="p">))</span>                                                               
+<span class="n">v</span> <span class="o">=</span> <span class="n">AntiSymmetricTensor</span><span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">),</span> <span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">s</span><span class="p">))</span>                                    
+<span class="n">pqsr</span> <span class="o">=</span> <span class="n">NO</span><span class="p">(</span><span class="n">Fd</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">*</span><span class="n">Fd</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="o">*</span><span class="n">F</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">*</span><span class="n">F</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+
+<span class="n">H</span> <span class="o">=</span> <span class="n">f</span><span class="o">*</span><span class="n">pq</span> <span class="o">+</span> <span class="n">Rational</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">pqsr</span>                                                                                                                                              
+
+<span class="n">ccsd</span> <span class="o">=</span> <span class="n">BCH</span><span class="o">.</span><span class="n">level</span><span class="p">(</span><span class="n">H</span><span class="p">,</span><span class="s2">&quot;SD&quot;</span><span class="p">)</span>
+
+<span class="n">eq</span> <span class="o">=</span> <span class="n">wicks</span><span class="p">(</span><span class="n">ccsd</span><span class="p">,</span><span class="n">simplify_kronecker_deltas</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">keep_only_fully_contracted</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>                                   
+<span class="n">index_rule</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;below&#39;</span><span class="p">:</span>  <span class="s1">&#39;ijklmno&#39;</span><span class="p">,</span><span class="s1">&#39;above&#39;</span><span class="p">:</span>  <span class="s1">&#39;abcdef&#39;</span><span class="p">,</span> <span class="s1">&#39;general&#39;</span><span class="p">:</span> <span class="s1">&#39;pqrs&#39;</span><span class="p">}</span>
+<span class="n">e_ccsd</span> <span class="o">=</span> <span class="n">substitute_dummies</span><span class="p">(</span><span class="n">eq</span><span class="p">,</span> <span class="n">new_indices</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">pretty_indices</span><span class="o">=</span><span class="n">index_rule</span><span class="p">)</span>                                                        
+<span class="n">display</span><span class="p">(</span><span class="n">e_ccsd</span><span class="p">)</span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle f^{i}_{a} t^{a}_{i} - \frac{t^{a}_{j} t^{b}_{i} v^{ij}_{ab}}{2} + \frac{t^{ab}_{ij} v^{ij}_{ab}}{4}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">eq</span> <span class="o">=</span> <span class="n">wicks</span><span class="p">(</span><span class="n">Fd</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">*</span><span class="n">F</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">*</span><span class="n">ccsd</span><span class="p">,</span><span class="n">simplify_kronecker_deltas</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">keep_only_fully_contracted</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>   
+<span class="n">index_rule</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;below&#39;</span><span class="p">:</span>  <span class="s1">&#39;jklmno&#39;</span><span class="p">,</span><span class="s1">&#39;above&#39;</span><span class="p">:</span>  <span class="s1">&#39;bcdef&#39;</span><span class="p">,</span> <span class="s1">&#39;general&#39;</span><span class="p">:</span> <span class="s1">&#39;pqrs&#39;</span><span class="p">}</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="p">(</span><span class="n">substitute_dummies</span><span class="p">(</span><span class="n">eq</span><span class="p">,</span> <span class="n">new_indices</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">pretty_indices</span><span class="o">=</span><span class="n">index_rule</span><span class="p">))</span>        
+<span class="n">display</span><span class="p">(</span><span class="n">t1</span><span class="p">)</span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle - f^{j}_{b} t^{b}_{i} t^{a}_{j} + f^{j}_{b} t^{ab}_{ij} - f^{j}_{i} t^{a}_{j} + f^{a}_{b} t^{b}_{i} + f^{a}_{i} - t^{b}_{j} t^{c}_{i} t^{a}_{k} v^{jk}_{bc} - t^{b}_{j} t^{c}_{i} v^{aj}_{bc} + t^{b}_{j} t^{a}_{k} v^{jk}_{ib} + t^{b}_{j} t^{ac}_{ik} v^{jk}_{bc} + t^{b}_{j} v^{aj}_{ib} - \frac{t^{b}_{i} t^{ac}_{jk} v^{jk}_{bc}}{2} + \frac{t^{a}_{k} t^{bc}_{ij} v^{jk}_{bc}}{2} + \frac{t^{bc}_{ij} v^{aj}_{bc}}{2} - \frac{t^{ab}_{jk} v^{jk}_{ib}}{2}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">eq</span> <span class="o">=</span> <span class="n">wicks</span><span class="p">(</span><span class="n">Fd</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">*</span><span class="n">Fd</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="o">*</span><span class="n">F</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">*</span><span class="n">F</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">*</span><span class="n">ccsd</span><span class="p">,</span><span class="n">simplify_kronecker_deltas</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">keep_only_fully_contracted</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>   
+<span class="n">index_rule</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;below&#39;</span><span class="p">:</span>  <span class="s1">&#39;klmno&#39;</span><span class="p">,</span><span class="s1">&#39;above&#39;</span><span class="p">:</span>  <span class="s1">&#39;cdef&#39;</span><span class="p">,</span> <span class="s1">&#39;general&#39;</span><span class="p">:</span> <span class="s1">&#39;pqrs&#39;</span><span class="p">}</span>
+<span class="n">t2</span> <span class="o">=</span> <span class="n">substitute_dummies</span><span class="p">(</span><span class="n">eq</span><span class="p">,</span> <span class="n">new_indices</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">pretty_indices</span><span class="o">=</span><span class="n">index_rule</span><span class="p">)</span>    
+<span class="n">P</span> <span class="o">=</span> <span class="n">PermutList</span> <span class="o">=</span> <span class="p">[</span><span class="n">PermutationOperator</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">),</span><span class="n">PermutationOperator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)]</span>
+<span class="n">t2</span> <span class="o">=</span> <span class="n">simplify_index_permutations</span><span class="p">(</span><span class="n">t2</span><span class="p">,</span><span class="n">PermutList</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">t2</span><span class="p">)</span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle f^{k}_{c} t^{c}_{i} t^{ab}_{jk} P(ij) + f^{k}_{c} t^{a}_{k} t^{bc}_{ij} P(ab) + f^{k}_{i} t^{ab}_{jk} P(ij) - f^{a}_{c} t^{bc}_{ij} P(ab) + t^{c}_{k} t^{d}_{i} t^{ab}_{jl} v^{kl}_{cd} P(ij) + t^{c}_{k} t^{a}_{l} t^{bd}_{ij} v^{kl}_{cd} P(ab) - t^{c}_{k} t^{ad}_{ij} v^{bk}_{cd} P(ab) + t^{c}_{k} t^{ab}_{il} v^{kl}_{jc} P(ij) + t^{c}_{i} t^{d}_{j} t^{a}_{k} t^{b}_{l} v^{kl}_{cd} + t^{c}_{i} t^{d}_{j} t^{a}_{k} v^{bk}_{cd} P(ab) + \frac{t^{c}_{i} t^{d}_{j} t^{ab}_{kl} v^{kl}_{cd}}{2} + t^{c}_{i} t^{d}_{j} v^{ab}_{cd} - t^{c}_{i} t^{a}_{k} t^{b}_{l} v^{kl}_{jc} P(ij) - t^{c}_{i} t^{a}_{k} t^{bd}_{jl} v^{kl}_{cd} P(ab) P(ij) - t^{c}_{i} t^{a}_{k} v^{bk}_{jc} P(ab) P(ij) - t^{c}_{i} t^{ad}_{jk} v^{bk}_{cd} P(ab) P(ij) - \frac{t^{c}_{i} t^{ab}_{kl} v^{kl}_{jc} P(ij)}{2} - t^{c}_{i} v^{ab}_{jc} P(ij) + \frac{t^{a}_{k} t^{b}_{l} t^{cd}_{ij} v^{kl}_{cd}}{2} + t^{a}_{k} t^{b}_{l} v^{kl}_{ij} + \frac{t^{a}_{k} t^{cd}_{ij} v^{bk}_{cd} P(ab)}{2} + t^{a}_{k} t^{bc}_{il} v^{kl}_{jc} P(ab) P(ij) + t^{a}_{k} v^{bk}_{ij} P(ab) + \frac{t^{cd}_{ij} t^{ab}_{kl} v^{kl}_{cd}}{4} + \frac{t^{cd}_{ij} v^{ab}_{cd}}{2} + \frac{t^{cd}_{jk} t^{ab}_{il} v^{kl}_{cd} P(ij)}{2} + t^{ac}_{ik} t^{bd}_{jl} v^{kl}_{cd} P(ij) + t^{ac}_{ik} v^{bk}_{jc} P(ab) P(ij) - \frac{t^{ac}_{ij} t^{bd}_{kl} v^{kl}_{cd} P(ab)}{2} + \frac{t^{ab}_{kl} v^{kl}_{ij}}{2} + v^{ab}_{ij}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Equation-of-motion-Coupled-Cluster">Equation-of-motion Coupled-Cluster<a class="anchor-link" href="#Equation-of-motion-Coupled-Cluster">&#182;</a></h3><p>EOM-CC allows to compute excited and open-shell character electronic states. There are many flavor depending on the target state from reference.</p>
+<h4 id="Energy-and-amplitude-equations-of-EOM-CC">Energy and amplitude equations of EOM-CC<a class="anchor-link" href="#Energy-and-amplitude-equations-of-EOM-CC">&#182;</a></h4>$$\bar{H} = e^{-T} H_{N} e^{T}$$$$\bra{\Phi_{ij..}^{ab..}}\bar{H}\hat{R}\ket{\Phi_{0}} = E_{EOM} \bra{\Phi_{ij..}^{ab..}}\hat{R}\ket{\Phi_{0}}$$$$\bra{\Phi_{ij..}^{ab..}}[\bar{H}-E_{cc},\hat{R}]\ket{\Phi_{0}} = \Delta E_{EOM} \bra{\Phi_{ij..}^{ab..}}\hat{R}\ket{\Phi_{0}}$$<p>Last equation is the one which we will derive using SymPy</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Example - EOM-IP-CCSD using genralized Davidson method</p>
+$$\begin{pmatrix}                                                               
+    \bar{H}_{SS} - E_{cc} &amp; \bar{H}_{SD} \\                                     
+    \bar{H}_{DS}          &amp;  \bar{H}_{DD} - E_{cc}                              
+  \end{pmatrix}
+  \begin{pmatrix}                                                               
+    R_{1}\\                                                                     
+    R_{2}                                                                       
+  \end{pmatrix}=\omega                                                                   
+  \begin{pmatrix}                                                               
+    R_{1}\\                                                                     
+    R_{2}                                                                       
+  \end{pmatrix}$$
+<pre><code>                                                         
+</code></pre>
+<p>and</p>
+<p>$$\begin{pmatrix}                                                               
+    L_{1} &amp; &amp;  L_{2}                                                            
+  \end{pmatrix}<br>
+  \begin{pmatrix}<br>
+    \bar{H}<em>{SS}-E</em>{cc} &amp; \bar{H}<em>{SD} \<br>
+    \bar{H}</em>{DS} &amp; \bar{H}<em>{DD}-E</em>{cc}</p>
+<h1 id="--\end{pmatrix}-----------------------------------------------------------------">  \end{pmatrix}                                                                 <a class="anchor-link" href="#--\end{pmatrix}-----------------------------------------------------------------">&#182;</a></h1><p>\omega<br>
+  \begin{pmatrix}                                                               
+    L_{1} &amp; &amp; L_{2},                                                            
+  \end{pmatrix}    $$</p>
+<p>Using matrix equations</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Need right $\sigma$ amplitudes of EOM-IP-CCSD amplitudes and for this we need</p>
+$$\bra{\Phi_{i}}[\bar{H}-E_{cc},\hat{R_{1}}]\ket{\Phi_{0}} = ((\bar{H}_{SS} - E_{cc}) R_{1})$$$$\bra{\Phi_{ij}^{a}}[\bar{H},\hat{R_{1}}]\ket{\Phi_{0}} = (\bar{H}_{DS} R_{1}) $$$$\bra{\Phi_{i}}[\bar{H},\hat{R_{2}}]\ket{\Phi_{0}} = (\bar{H}_{SD} R_{2})$$$$\bra{\Phi_{ij}^{a}}[\bar{H}-E_{cc},\hat{R_{2}}]\ket{\Phi_{0}} =((\bar{H}_{DD} - E_{cc}) R_{2}) $$<p>Therefore, trial vectors are defined as</p>
+$$\sigma_{1}=((\bar{H}_{SS}-E_{cc})R_{1})+(\bar{H}_{SD}R_{2})$$$$\sigma_{2}=(\bar{H}_{DS}R_{1}) +((\bar{H}_{DD}-E_{cc})R_{2})$$<p>Similarly, left vectors are defined. Lets use power of SymPy for right $\sigma$ amplitudes of EOM-IP-CCSD</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">EOM</span><span class="o">,</span><span class="nn">SIGMA</span>
+<span class="n">flavor1</span> <span class="o">=</span> <span class="s2">&quot;IP&quot;</span>
+<span class="n">R0_f1</span> <span class="o">=</span> <span class="n">EOM</span><span class="o">.</span><span class="n">R0</span><span class="p">(</span><span class="n">flavor1</span><span class="p">)</span>
+<span class="n">R1_f1</span> <span class="o">=</span> <span class="n">EOM</span><span class="o">.</span><span class="n">R1</span><span class="p">(</span><span class="n">flavor1</span><span class="p">)</span>
+<span class="n">R2_f1</span> <span class="o">=</span> <span class="n">EOM</span><span class="o">.</span><span class="n">R2</span><span class="p">(</span><span class="n">flavor1</span><span class="p">)</span>
+<span class="n">Rf1</span>  <span class="o">=</span> <span class="n">R0_f1</span> <span class="o">+</span> <span class="n">R1_f1</span> <span class="o">+</span> <span class="n">R2_f1</span>
+                                                                            
+<span class="n">SIGMA</span><span class="o">.</span><span class="n">RVECTORS</span><span class="p">(</span><span class="n">R0_f1</span><span class="p">,</span><span class="n">R1_f1</span><span class="p">,</span><span class="n">R2_f1</span><span class="p">,</span><span class="n">flavor1</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<p>Computing right sigma amplitudes for IP (skipping summation for dummy variables)</p>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle ((\overline{H}_{SS}-E_{cc})R_{1}) = - f^{j}_{a} r^{}_{j} t^{a}_{i} - f^{j}_{i} r^{}_{j} + r^{}_{j} t^{a}_{k} t^{b}_{i} v^{jk}_{ab} - r^{}_{j} t^{a}_{k} v^{jk}_{ia} - \frac{r^{}_{j} t^{ab}_{ik} v^{jk}_{ab}}{2}$
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle (\overline{H}_{SD}R_{2}) = f^{j}_{a} r^{a}_{ij} + \frac{r^{a}_{jk} t^{b}_{i} v^{jk}_{ab}}{2} - \frac{r^{a}_{jk} v^{jk}_{ia}}{2} + r^{a}_{ij} t^{b}_{k} v^{jk}_{ab}$
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle (\overline{H}_{DS}R_{1}) = f^{k}_{b} r^{}_{k} t^{ab}_{ij} - r^{}_{k} t^{b}_{l} t^{ac}_{ij} v^{kl}_{bc} + r^{}_{k} t^{b}_{i} t^{c}_{j} t^{a}_{l} v^{kl}_{bc} + r^{}_{k} t^{b}_{i} t^{c}_{j} v^{ak}_{bc} - r^{}_{k} t^{b}_{i} t^{a}_{l} v^{kl}_{jb} - r^{}_{k} t^{b}_{i} t^{ac}_{jl} v^{kl}_{bc} - r^{}_{k} t^{b}_{i} v^{ak}_{jb} + r^{}_{k} t^{b}_{j} t^{a}_{l} v^{kl}_{ib} + r^{}_{k} t^{b}_{j} t^{ac}_{il} v^{kl}_{bc} + r^{}_{k} t^{b}_{j} v^{ak}_{ib} + \frac{r^{}_{k} t^{a}_{l} t^{bc}_{ij} v^{kl}_{bc}}{2} + r^{}_{k} t^{a}_{l} v^{kl}_{ij} + \frac{r^{}_{k} t^{bc}_{ij} v^{ak}_{bc}}{2} + r^{}_{k} t^{ab}_{il} v^{kl}_{jb} - r^{}_{k} t^{ab}_{jl} v^{kl}_{ib} + r^{}_{k} v^{ak}_{ij}$
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle ((\overline{H}_{DD}-E_{cc})R_{2}) = - f^{k}_{b} r^{b}_{ij} t^{a}_{k} - f^{k}_{b} r^{a}_{ik} t^{b}_{j} P(ij) + f^{k}_{i} r^{a}_{jk} P(ij) + f^{a}_{b} r^{b}_{ij} - \frac{r^{b}_{kl} t^{ac}_{ij} v^{kl}_{bc}}{2} - r^{b}_{ik} t^{c}_{j} t^{a}_{l} v^{kl}_{bc} P(ij) - r^{b}_{ik} t^{c}_{j} v^{ak}_{bc} P(ij) + r^{b}_{ik} t^{a}_{l} v^{kl}_{jb} P(ij) + r^{b}_{ik} t^{ac}_{jl} v^{kl}_{bc} P(ij) + r^{b}_{ik} v^{ak}_{jb} P(ij) + r^{b}_{ij} t^{c}_{k} t^{a}_{l} v^{kl}_{bc} + r^{b}_{ij} t^{c}_{k} v^{ak}_{bc} - \frac{r^{b}_{ij} t^{ac}_{kl} v^{kl}_{bc}}{2} + \frac{r^{a}_{kl} t^{b}_{i} t^{c}_{j} v^{kl}_{bc}}{2} - \frac{r^{a}_{kl} t^{b}_{i} v^{kl}_{jb} P(ij)}{2} + \frac{r^{a}_{kl} t^{bc}_{ij} v^{kl}_{bc}}{4} + \frac{r^{a}_{kl} v^{kl}_{ij}}{2} + r^{a}_{ik} t^{b}_{l} t^{c}_{j} v^{kl}_{bc} P(ij) - r^{a}_{ik} t^{b}_{l} v^{kl}_{jb} P(ij) - \frac{r^{a}_{ik} t^{bc}_{jl} v^{kl}_{bc} P(ij)}{2}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Properties">Properties<a class="anchor-link" href="#Properties">&#182;</a></h3><h4 id="One-particle-density-matrix-(OPDM)">One particle density matrix (OPDM)<a class="anchor-link" href="#One-particle-density-matrix-(OPDM)">&#182;</a></h4>$$\gamma^I_{pq}= \bra{\Psi_{I}}p^{\dagger}q\ket{\Psi_{I}}$$<h4 id="One-particle-transition-density-matrix-(OPTDM)">One particle transition density matrix (OPTDM)<a class="anchor-link" href="#One-particle-transition-density-matrix-(OPTDM)">&#182;</a></h4>$$\gamma^{IJ}_{pq}= \bra{\Psi_{I}}p^{\dagger}q\ket{\Psi_{J}}$$
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">EOM</span><span class="o">,</span> <span class="nn">DM</span><span class="o">,</span> <span class="nn">TDM</span> 
+<span class="n">flavor1</span> <span class="o">=</span> <span class="s2">&quot;IP&quot;</span>
+<span class="n">R0_f1</span> <span class="o">=</span> <span class="n">EOM</span><span class="o">.</span><span class="n">R0</span><span class="p">(</span><span class="n">flavor1</span><span class="p">)</span>
+<span class="n">R1_f1</span> <span class="o">=</span> <span class="n">EOM</span><span class="o">.</span><span class="n">R1</span><span class="p">(</span><span class="n">flavor1</span><span class="p">)</span>
+<span class="n">R2_f1</span> <span class="o">=</span> <span class="n">EOM</span><span class="o">.</span><span class="n">R2</span><span class="p">(</span><span class="n">flavor1</span><span class="p">)</span>
+<span class="n">Rf1</span>  <span class="o">=</span> <span class="n">R0_f1</span> <span class="o">+</span> <span class="n">R1_f1</span> <span class="o">+</span> <span class="n">R2_f1</span>
+                                                                                
+<span class="n">L0_f1</span> <span class="o">=</span> <span class="n">EOM</span><span class="o">.</span><span class="n">L0</span><span class="p">(</span><span class="n">flavor1</span><span class="p">)</span>
+<span class="n">L1_f1</span> <span class="o">=</span> <span class="n">EOM</span><span class="o">.</span><span class="n">L1</span><span class="p">(</span><span class="n">flavor1</span><span class="p">)</span>
+<span class="n">L2_f1</span> <span class="o">=</span> <span class="n">EOM</span><span class="o">.</span><span class="n">L2</span><span class="p">(</span><span class="n">flavor1</span><span class="p">)</span>
+<span class="n">Lf1</span>  <span class="o">=</span> <span class="n">L0_f1</span> <span class="o">+</span> <span class="n">L1_f1</span> <span class="o">+</span> <span class="n">L2_f1</span>
+<span class="n">DM</span><span class="o">.</span><span class="n">OPDM</span><span class="p">(</span><span class="n">Lf1</span><span class="p">,</span><span class="n">Rf1</span><span class="p">,</span><span class="n">flavor1</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<p>Computing OPDM for IP (skipping summation for dummy variables)</p>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle \gamma_{ij} = \delta_{i j} l^{k}_{} r^{}_{k} + \frac{\delta_{i j} l^{kl}_{a} r^{a}_{kl}}{2} - l^{j}_{} r^{}_{i} + l^{jk}_{a} r^{}_{k} t^{a}_{i} - l^{jk}_{a} r^{a}_{ik}$
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle \gamma_{ia} = l^{j}_{} r^{}_{j} t^{a}_{i} - l^{j}_{} r^{}_{i} t^{a}_{j} - l^{j}_{} r^{a}_{ij} - l^{jk}_{b} r^{}_{j} t^{b}_{i} t^{a}_{k} + l^{jk}_{b} r^{}_{j} t^{ab}_{ik} - \frac{l^{jk}_{b} r^{}_{i} t^{ab}_{jk}}{2} + \frac{l^{jk}_{b} r^{b}_{jk} t^{a}_{i}}{2} + l^{jk}_{b} r^{b}_{ij} t^{a}_{k} - \frac{l^{jk}_{b} r^{a}_{jk} t^{b}_{i}}{2}$
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle \gamma_{ai} = - l^{ij}_{a} r^{}_{j}$
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle \gamma_{ab} = l^{ij}_{a} r^{}_{i} t^{b}_{j} + \frac{l^{ij}_{a} r^{b}_{ij}}{2}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">flavor2</span> <span class="o">=</span> <span class="s2">&quot;CCSD&quot;</span>                                                                
+<span class="n">R0_f2</span> <span class="o">=</span> <span class="n">EOM</span><span class="o">.</span><span class="n">R0</span><span class="p">(</span><span class="n">flavor2</span><span class="p">)</span>                                                    
+<span class="n">R1_f2</span> <span class="o">=</span> <span class="n">EOM</span><span class="o">.</span><span class="n">R1</span><span class="p">(</span><span class="n">flavor2</span><span class="p">)</span>                                                    
+<span class="n">R2_f2</span> <span class="o">=</span> <span class="n">EOM</span><span class="o">.</span><span class="n">R2</span><span class="p">(</span><span class="n">flavor2</span><span class="p">)</span>                                                    
+<span class="n">Rf2</span>  <span class="o">=</span> <span class="n">R0_f2</span> <span class="o">+</span> <span class="n">R1_f2</span> <span class="o">+</span> <span class="n">R1_f2</span>                                                   
+                                                                                
+<span class="n">L0_f2</span> <span class="o">=</span> <span class="n">EOM</span><span class="o">.</span><span class="n">L0</span><span class="p">(</span><span class="n">flavor2</span><span class="p">)</span>                                                    
+<span class="n">L1_f2</span> <span class="o">=</span> <span class="n">EOM</span><span class="o">.</span><span class="n">L1</span><span class="p">(</span><span class="n">flavor2</span><span class="p">)</span>                                                    
+<span class="n">L2_f2</span> <span class="o">=</span> <span class="n">EOM</span><span class="o">.</span><span class="n">L2</span><span class="p">(</span><span class="n">flavor2</span><span class="p">)</span>                                                    
+<span class="n">Lf2</span>  <span class="o">=</span> <span class="n">L0_f2</span> <span class="o">+</span> <span class="n">L1_f2</span> <span class="o">+</span> <span class="n">L2_f2</span>                                                
+
+<span class="n">TDM</span><span class="o">.</span><span class="n">OPTDM</span><span class="p">(</span><span class="n">Lf1</span><span class="p">,</span><span class="n">Rf1</span><span class="p">,</span><span class="n">Lf2</span><span class="p">,</span><span class="n">Rf2</span><span class="p">,</span><span class="n">flavor1</span><span class="p">,</span><span class="n">flavor2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<p>Computing Dyson OPTDM between IP $\rightarrow$ CCSD (skipping summation for dummy variables)</p>
+
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle \gamma_i^{R} = - l^{j}_{b} r^{}_{j} t^{b}_{i} + l^{j}_{b} r^{b}_{ij} - \frac{l^{jk}_{bc} r^{}_{j} t^{bc}_{ik}}{2} + \frac{l^{jk}_{bc} r^{b}_{jk} t^{c}_{i}}{2} + r^{}_{i}$
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle \gamma_a^{R} = l^{j}_{a} r^{}_{j} + \frac{l^{jk}_{ab} r^{b}_{jk}}{2}$
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle \gamma_i^{L} = l^{i}_{}$
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_latex output_subarea ">
+$\displaystyle \gamma_a^{L} = l^{i}_{} t^{a}_{i} + \frac{l^{ij}_{c} t^{ac}_{ij}}{2}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+ 
+
